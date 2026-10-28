@@ -976,11 +976,20 @@ def THREAD_GMC_fetchValues(varlist):
     
     # --- BEGIN HOMEBRIDGE GIST PUSH (local fork only) ---
     if "CPM1st" in THREAD_alldata:
-        scripts_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts")
-        if scripts_dir not in sys.path:
-            sys.path.insert(0, scripts_dir)
-        import push_to_gist
-        threading.Thread(target=push_to_gist.push, args=(THREAD_alldata["CPM1st"],), daemon=True).start()
+        import os
+        import threading
+        
+        # Global counter for rate limiting (max 100/hour for Gist updates)
+        if not hasattr(THREAD_GMC_fetchValues, "_push_counter"):
+            THREAD_GMC_fetchValues._push_counter = 0
+        THREAD_GMC_fetchValues._push_counter += 1
+        
+        if THREAD_GMC_fetchValues._push_counter % 12 == 0:
+            scripts_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts")
+            if scripts_dir not in sys.path:
+                sys.path.insert(0, scripts_dir)
+            import push_to_gist
+            threading.Thread(target=push_to_gist.push, args=(THREAD_alldata["CPM1st"],), daemon=True).start()
     # --- END HOMEBRIDGE GIST PUSH ---
 
     return THREAD_alldata
@@ -1076,6 +1085,10 @@ def fetchSingleValueGMC(GMC_DataSerial, vname):
     elif  g.GMC_Bytes == 2:
             value = brec[0] << 8 | brec[1]
             if maskHighBit: value = value & 0x3fff                          # mask out high bits; ONLY for CPS* calls on 300 series counters
+
+    # Filter out the GMC-300S 32768 overflow spikes before they reach the database
+    if value >= 20000:
+        value = g.NAN
 
     # rdprint(defname, f" {vname:6s} Cmd: {str(wcommand):28s}  brec: {str(brec):37s} Dur: {1000 * calldur:6.1f} ms  value: {value:<5.0f}  ")
 
