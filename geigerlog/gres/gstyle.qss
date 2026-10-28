@@ -1,0 +1,97 @@
+/* PyQt6 QSS file with generic style configs */
+/* https://doc.qt.io/qt-5/stylesheet-syntax.html */
+
+
+/* from CSS, but does NOT work in QSS
+using in css like:     background-color: var(--lightyellow) */
+/* :root {
+    --blue: #1e90ff;
+    --white: #ffffff;
+    --lightyellow: #ffffdd;
+}
+ */
+
+/* QWidget {
+    background-color: #fefeff;
+} */
+
+QLineEdit {
+    /* background-color: #ffffdd; */
+    background-color: white;
+}
+
+QTextEdit{
+    background-color: #fdfdff;
+}
+
+QPlainTextEdit{
+    /* background-color: #afa; */
+    background-color: #fdfdff;
+}
+
+QTextBrowser{
+    background-color: #fdfdff;
+}
+
+QDialog{
+    /* background-color: #fdf; */
+    background-color: #efefef;
+}
+
+QFileDialog{
+    /* background-color: #fea; */
+    background-color: #efefef;
+    /* color: purple; */
+}
+
+QInputDialog {
+    /* background-color: #afa; */
+    background-color: #efefef;
+}
+
+QListWidget {
+    color: #000;
+    background-color: #fdfdff;
+}
+
+/* scheint nicht änderbar zu sein??? */
+QInputDialog {
+    /* background-color: #afa; */
+    background-color: #efefef;
+    color: red;
+}
+
+/* needed for Mac - no does not help :-(*/
+QPushButton {
+    /* background-color: #2ABf9E; */
+    /* padding: 20px; */
+    /* font-size: 18px; */
+    /* height: 38; */
+    font-size:13px;
+}
+
+/*
+QLabel {
+    background-color: #FFFFFF;
+    qproperty-alignment: AlignLeft;
+}
+
+QListWidget {
+    color: #FFFFFF;
+    background-color: #33373B;
+}
+
+QListWidget::item {
+    height: 50px;
+}
+
+QListWidget::item:selected {
+    background-color: #2ABf9E;
+}
+
+QPushButton {
+    background-color: #2ABf9E;
+    padding: 20px;
+    font-size: 18px;
+}
+*/

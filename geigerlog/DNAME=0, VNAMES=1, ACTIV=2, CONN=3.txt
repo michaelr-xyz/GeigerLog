@@ -1,0 +1,1 @@
+g.DNAME=0, VNAMES=1, g.ACTIV=2, g.CONN=3

@@ -1,0 +1,179 @@
+# GeigerLog Custom Configuration file "custom.cfg"
+#
+# This is a convenience option. You don't need this file, and can delete it, and do
+# all your configuration in file "geigerlog.cfg".
+#
+# However, it is recommended to instead keep the file "geigerlog.cfg" unchanged, and
+# adapt ONLY this file "custom.cfg" to your needs.
+#
+# When this file is named "custom.cfg" and is residing in folder "gconfig" it will be
+# processed right after the file "geigerlog.cfg". Anything named here will overwrite
+# any previous setting of that same name done in "geigerlog.cfg".
+#
+# Required is:
+#    - the section name in square parenthesis,
+#    - followed by those parameters of this same section you wish to redefine.
+#
+# EXAMPLE:
+# To activate a GMC device, uncomment - aka delete character '#' - in the next two lines:
+#[GMC_Device]
+#GMC_Activation = yes
+#
+# To also have it collect data to the variables CPM and CPS (instead of to the default
+# variables CPM1st and CPS1st), add the next line - uncommented - as well:
+#GMC_Variables = CPM, CPS
+#
+#######################################################################################
+
+
+[Window]
+windowWidth      = 1370
+windowHeight     = 779
+
+
+# [Graphic]
+### VARIABLES: CPM,  CPS,     CPM1st,      CPS1st, CPM2nd, CPS2nd,    CPM3rd, CPS3rd, Temperature, Pressure, Humidity, Xtra
+### Default  = blue, magenta, deepskyblue, violet, cyan,   #9b59b6, brown,  orange, red,         black,    green,    #00ff00
+# linecolor  = blue, magenta, deepskyblue, violet, cyan,   #9b59b6, brown,  orange, red,         black,    green,    #00ff00
+
+
+# [GMC_Device]
+# GMC_Activation = yes
+# # GMC_Variables  = auto
+# GMC_Variables  = CPM, CPS
+
+
+# [RadProDevice]
+# RadProActivation        = yes
+# RadProVoltageDefault    = auto
+# RadProHVControl         = auto
+# RadProVariables         = CPM3rd, CPS3rd, Temp, Press, Humid
+
+
+# [IOTDevice]
+# # Plug Adapter:  EIGHTREE   IP: *29    TPlug1   451554
+# # Plug Adapter:  EIGHTREE   IP: *43    TPlug2   44D69C
+# #
+# # Plug Adapter:  NOUS A8T   IP: *58    TPlug7   4B1C7C  Eigenverbrauch: ca 1.0 W
+# # Plug Adapter:  NOUS A8T   IP: *36    TPlug8   49F63C  Eigenverbrauch: ca 1.0 W
+# #
+# IOTActivation       = yes
+# IOTBrokerIP         = auto
+# IOTBrokerPort       = auto
+# IOTUsername         = auto
+# IOTPassword         = auto
+# IOTTimeout          = auto
+# IOTBrokerFolder     = auto
+# # IOTClientTasmotaSMR = y,     geigerlog/tasmotaSMR,    10,           CPM3rd, CPS3rd, Temp, Press, Humid, Xtra
+# # IOTClientDataGLvars = y,     geigerlog/GLdevice,      SEND,         CPM, CPS, CPM1st, CPS1st, CPM2nd, CPS2nd
+# #
+# #   Activ  Device    Name            Variables
+# #   0      1         2               3
+# # IOTClients  = auto
+# IOTClients  =
+#     y,     Tplug7,   A8T#1,          None, None, CPM1st
+
+
+# [DMM]
+# ### my setup:  #1:    DMMDevice = A6:C0:80:E3:85:9D  Label: BDM#1
+# ###            #2:    DMMDevice = A6:C0:80:E3:80:78  Label: BDM#2
+# DMMActivation   = yes
+# # DMMDevice       =
+# # DMMDevice       = auto
+# # DMMDevice       = BDM#2|A6:C0:80:E3:80:78
+# # DMMDevice       = BDM#2|A6:C0:80:E3:80:78, BDM#1|A6:C0:80:E3:85:9D
+# # DMMDevice       = BDM#1|A6:C0:80:E3:85:9D, BDM#2|A6:C0:80:E3:80:78
+# DMMDevice       = BDM#1|A6:C0:80:E3:85:9D
+# # DMMVariables    = auto
+# # DMMVariables    = Temp, Press
+# DMMVariables    = Xtra
+
+
+# [I2CDevice]
+# I2CActivation       = yes
+# I2CDongle           = ELV
+# I2Cusbport          = auto
+# # I2CSensorLM75     = yes,  0x48, Temp
+# I2CSensorBME280     = yes,  0x76, Press, None, None
+# # I2CSensorBH1750   = yes,  0x23, CPM3rd
+# # I2CSensorLTR390   = no,   0x53, CPM3rd, CPS3rd
+# I2CSensorINA228     = yes,  0x40, CPM, CPS, CPM2nd, Humid
+
+
+[WiFiServerDevice]
+WiFiServerActivation = yes
+WiFiServer =
+#  TasmotaPlug value order:  Voltage, Current, Power, EnergyTotal, ApparentPower, ReactivePower, PowerFactor
+#  GMCserver   value order:  CPM1st, CPS1st, (CPM2nd, CPS2nd - for Counters with 2 tubes)
+#  <Activation>, <Category>, <DevType>,    <IP>,       <Port>,  <Variables>
+#    yes,          Tasmota,    Plug,         10.0.0.58,  80,      None, None, Press
+#    yes,          Tasmota,    Geiger,       10.0.0.104, 80,      CPM1st, CPS1st, Temp, Xtra   # 4 MB
+#    yes,          Tasmota,    Geiger,       10.0.0.108, 80,      CPM2nd, CPS2nd, Temp, Xtra   # 8 MB
+   yes,          Tasmota,    Geiger,       10.0.0.116, 80,      CPM3rd, CPS3rd, Temp, Xtra   # 16 MB
+
+#    yes,          Tasmota,    Poisson,      10.0.0.104, 80,      CPM, CPS, CPS1st, CPM2nd, CPS2nd
+#    yes,          Tasmota,    GDK101,       10.0.0.199, 80,      CPM3rd, CPS3rd, Temp, CPS2nd
+#    yes,          GLDS,       GMCserver,    10.0.0.20,  7777,    None, Temp
+#    yes,          GLDS,       RaspiServer,  10.0.0.20,  4000,    None, None, None, None
+#    yes,          GLDS,       SimulServer,  10.0.0.20,  5555,    None, None, None, None, None, None, None, CPM3rd
+#    yes,          GLDS,       PulseServer,  10.0.0.20,  8888,    None, CPS1st
+
+
+
+# [Formula]
+# FormulaActivation = yes
+# # FormulaVariables  = CPS1st, Xtra
+# # FormulaVariables  = CPS1st, CPS2nd, CPS3rd, Xtra
+# # FormulaVariables  = CPS1st, CPS2nd, CPS3rd
+# FormulaVariables  = CPS2nd
+
+
+# [FritzBox]
+# FritzBoxActivation = yes
+# FritzBoxIP         = auto
+# FritzBoxPassword   = auto
+
+
+# [ValueFormula]
+# # CPS3rd  = FRITZBOX200("Temperature")
+# # CPS1st  = FRITZBOX200("POWER")
+# # CPS2nd  = FRITZBOX200("Energy")
+# CPS2nd  = DIFFVV("CPS1st","CPM2nd")
+# # CPS3rd  = SMOOTH("CPS2ND", 30, 0)
+# # Xtra    = DIFFVV("Temp", "Press")
+# # Xtra    = DIVVV("CPM1st", "CPM2nd")
+
+
+[GraphFormula]
+# CPM    = val * 10
+# CPS    = val * 100*2
+# CPM2nd = val * 10
+# # CPM3rd = val / 300
+Humid    = val *990
+
+# [Spectro]
+# CalibLinesCustom =
+#      , 3333.333,    Fantasy
+
+
+# [Comment]
+# CommentCPM    = inaVolt V
+# CommentCPS    = inaCurr A
+
+# CommentCPM1st = #0 NOUS A8T
+# # CommentCPS1st = Tasmota Dur ms
+# CommentCPS1st = #3 PulseCount
+
+# CommentCPM2nd = inaPowr W
+# CommentCPS2nd = %%Efficiency
+
+# # CommentCPM3rd = GY30 Light
+# CommentCPM3rd = #3 Poiss10k
+# CommentCPS3rd = %%EffSmooth30
+
+# # CommentTemp   = LM75 Temp °C
+# CommentTemp   = #1 GMC CPM
+# CommentPress  = BME280 Temp
+CommentHumid  = Saving
+# CommentXtra   = 0# TPLG Factor
+
