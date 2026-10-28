@@ -1,0 +1,18 @@
+# GeigerLog generated data & backups
+data/*.bak
+data/*.csv
+data/*.txt
+
+# Configuration (remove custom.cfg from here if you want to track your config)
+# gconfig/custom.cfg
+
+# Python virtual environments
+__venv*/
+venv/
+*.pyc
+__pycache__/
+.DS_Store
+
+# Secrets
+.env
+
