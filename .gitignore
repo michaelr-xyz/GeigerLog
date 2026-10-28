@@ -16,3 +16,5 @@ __pycache__/
 # Secrets
 .env
 
+data/geigerlog.proglog
+gconfig/geigerlog.settings
