@@ -791,7 +791,9 @@ def GMC_WriteDateTime():
 
 def THREAD_GMC_fetchValues(varlist):
     """get all data for vars in varlist for LOCAL storage"""
-
+    import sys
+    import os
+    import threading
     ### serial duration tests open close datacall
     ### CPU Model: AMD Ryzen AI 9 HX 370 w/ Radeon 890M, GeigerLog Benchmark (GLBM): 285
 
@@ -971,6 +973,15 @@ def THREAD_GMC_fetchValues(varlist):
         elif g.GMC_getInfoFlag == 2: myext = True
         g.GMC_DatetimeMsg = getInfoGMC(extended=myext, force=True)
         g.GMC_getInfoFlag = 0
+    
+    # --- BEGIN HOMEBRIDGE GIST PUSH (local fork only) ---
+    if "CPM1st" in THREAD_alldata:
+        scripts_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts")
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        import push_to_gist
+        threading.Thread(target=push_to_gist.push, args=(THREAD_alldata["CPM1st"],), daemon=True).start()
+    # --- END HOMEBRIDGE GIST PUSH ---
 
     return THREAD_alldata
 
