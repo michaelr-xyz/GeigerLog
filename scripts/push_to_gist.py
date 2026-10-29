@@ -8,18 +8,18 @@ def push(val):
     
     if not TOKEN:
         print("ERROR: GITHUB_GEIGER_GIST_TOKEN not set in environment.")
-        return val
-        
-    # Filter out the 32768 overflow spikes
-    if val >= 20000:
-        val = -1
+        return
         
     url = f"https://api.github.com/gists/{GIST_ID}"
     headers = {
         "Authorization": f"token {TOKEN}",
         "Accept": "application/vnd.github.v3+json"
     }
-    data = json.dumps({"files": {"geiger.txt": {"content": str(val)}}}).encode("utf-8")
+    
+    # Format as a clean integer for HomeKit
+    clean_val = int(float(val))
+    
+    data = json.dumps({"files": {"geiger.txt": {"content": str(clean_val)}}}).encode("utf-8")
     req = urllib.request.Request(url, data=data, headers=headers, method="PATCH")
     
     try:
@@ -28,5 +28,3 @@ def push(val):
     except Exception as e:
         print(f"Gist update failed: {e}")
         
-    return val
-

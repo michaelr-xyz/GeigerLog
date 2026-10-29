@@ -683,6 +683,28 @@ def GMC_THREAD_Target(args):
             # fetch the values
             g.GMC_Value = THREAD_GMC_fetchValues(varlist)           # gives error if doing when not logging
 
+            # --- BEGIN SERIAL RECOVERY (local fork only) ---
+            # Track consecutive failures; if we get 5 in a row, force a hardware reset
+            if not hasattr(GMC_THREAD_Target, "_consecutive_fails"):
+                GMC_THREAD_Target._consecutive_fails = 0
+
+            if any(isinstance(v, str) or (isinstance(v, float) and v != v) for v in g.GMC_Value.values()):
+                # Some variable returned a string (error) or NaN
+                GMC_THREAD_Target._consecutive_fails += 1
+                if GMC_THREAD_Target._consecutive_fails >= 5:
+                    print("SERIAL RECOVERY: 5 consecutive failures — resetting GMC connection")
+                    try:
+                        terminateGMC()
+                        time.sleep(2)
+                        initGMC()
+                    except Exception as e:
+                        print(f"SERIAL RECOVERY FAILED: {e}")
+                    GMC_THREAD_Target._consecutive_fails = 0
+            else:
+                # All good this cycle
+                GMC_THREAD_Target._consecutive_fails = 0
+            # --- END SERIAL RECOVERY ---
+
             # clock correction
             if g.GMC_ClockCorrection > 0 and (getMinute() == g.GMC_NextCorrMin):
                 makeClockCorrectionGMC()
@@ -793,7 +815,7 @@ def THREAD_GMC_fetchValues(varlist):
     """get all data for vars in varlist for LOCAL storage"""
     import sys
     import os
-    import threading
+    import time
     ### serial duration tests open close datacall
     ### CPU Model: AMD Ryzen AI 9 HX 370 w/ Radeon 890M, GeigerLog Benchmark (GLBM): 285
 
@@ -976,22 +998,26 @@ def THREAD_GMC_fetchValues(varlist):
     
     # --- BEGIN HOMEBRIDGE GIST PUSH (local fork only) ---
     if "CPM1st" in THREAD_alldata:
-        import os
-        import threading
+        import math
         
-        # Global counter for rate limiting (max 100/hour for Gist updates)
-        if not hasattr(THREAD_GMC_fetchValues, "_push_counter"):
-            THREAD_GMC_fetchValues._push_counter = 0
-        THREAD_GMC_fetchValues._push_counter += 1
+        val = THREAD_alldata["CPM1st"]
         
-        if THREAD_GMC_fetchValues._push_counter % 12 == 0:
-            scripts_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts")
-            if scripts_dir not in sys.path:
-                sys.path.insert(0, scripts_dir)
-            import push_to_gist
-            threading.Thread(target=push_to_gist.push, args=(THREAD_alldata["CPM1st"],), daemon=True).start()
+        # Only push if it's a valid float (ignore strings, NaNs, and error codes)
+        if isinstance(val, (int, float)) and not math.isnan(val):
+            # Wall-clock rate limiter (max one push per 60 seconds)
+            if not hasattr(THREAD_GMC_fetchValues, "_last_push_time"):
+                THREAD_GMC_fetchValues._last_push_time = 0
+            
+            now = time.time()
+            if now - THREAD_GMC_fetchValues._last_push_time >= 60:
+                THREAD_GMC_fetchValues._last_push_time = now
+                
+                scripts_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts")
+                if scripts_dir not in sys.path:
+                    sys.path.insert(0, scripts_dir)
+                import push_to_gist
+                threading.Thread(target=push_to_gist.push, args=(val,), daemon=True).start()
     # --- END HOMEBRIDGE GIST PUSH ---
-
     return THREAD_alldata
 
 
