@@ -857,7 +857,7 @@ def THREAD_GMC_fetchValues(varlist):
         try:
             start = time.time()
             GMC_DataSerial = serial.Serial(g.GMC_usbport, baudrate=g.GMC_baudrate, timeout=g.GMC_timeoutR_getData, write_timeout=g.GMC_timeoutW)
-            # gdprint(defname, f"open duration: {1E3 * (time.time() - start):0.3f} ms")
+            time.sleep(0.1)  # give the CH340 chip time to settle after opening
 
         except serial.SerialException as e:
             # no serial connection
@@ -1086,11 +1086,14 @@ def fetchSingleValueGMC(GMC_DataSerial, vname):
         getGMC_WaitBytes(GMC_DataSerial)
 
         # getting data bytes
+        # Drain any stale bytes before sending a new command
+        getGMC_WaitBytes(GMC_DataSerial)
+
         callstart = time.time()
-        bwrt      = GMC_DataSerial.write(wcommand)                           # returns bwrt: Number of bytes written, type: <class 'int'>
-        brec      = GMC_DataSerial.read(g.GMC_Bytes)                         # returns brec: data record of           type: <class 'bytes'>
+        bwrt      = GMC_DataSerial.write(wcommand)
+        brec      = GMC_DataSerial.read(g.GMC_Bytes)
         brec     += getGMC_WaitBytes(GMC_DataSerial)
-        calldur   = time.time() - callstart                                  # get duration of call in sec
+        calldur   = time.time() - callstart
         # rdprint(defname, "{}  brec: {} calldur: {:0.1f} ms ".format(vname, brec, 1000 * calldur))
 
     except Exception as e:
@@ -1102,7 +1105,19 @@ def fetchSingleValueGMC(GMC_DataSerial, vname):
     if calldur >= g.GMC_timeoutR_getData:       return "R_TIMEOUT"           # it is a timeout
 
     # check for correct number of bytes
-    if len(brec) != g.GMC_Bytes:                return f"WRONG_BYTECOUNT: {len(brec)}  in brec: '{brec}'"
+    if len(brec) != g.GMC_Bytes:
+        # Retry once after flushing the buffer
+        getGMC_WaitBytes(GMC_DataSerial)
+        time.sleep(0.05)
+        try:
+            GMC_DataSerial.write(wcommand)
+            brec = GMC_DataSerial.read(g.GMC_Bytes)
+            brec += getGMC_WaitBytes(GMC_DataSerial)
+        except Exception:
+            pass
+        
+        if len(brec) != g.GMC_Bytes:
+            return f"WRONG_BYTECOUNT: {len(brec)}  in brec: '{brec}'"
 
     # all ok, got correct no of bytes, either 2 or 4
     if    g.GMC_Bytes == 4:
