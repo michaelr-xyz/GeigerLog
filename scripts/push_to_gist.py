@@ -2,6 +2,10 @@ import os
 import urllib.request
 import json
 
+# Local fork-specific gist endpoint used for my personal monitoring setup.
+# Anyone copying this project should replace GIST_ID and the token name/contents
+# for their own GitHub gist or remove this script from their workflow.
+
 def push(val):
     GIST_ID = "a664e87ad6db06cc1eedd8f3c7ef15a3"
     TOKEN = os.environ.get("GITHUB_GEIGER_GIST_TOKEN")
