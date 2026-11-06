@@ -684,24 +684,34 @@ def GMC_THREAD_Target(args):
             g.GMC_Value = THREAD_GMC_fetchValues(varlist)           # gives error if doing when not logging
 
             # --- BEGIN SERIAL RECOVERY (local fork only) ---
-            # Track consecutive failures; if we get 5 in a row, force a hardware reset
+            # Track consecutive failures; if we get 20 in a row (100 sec), flush the serial
+            # buffer and force a clean reopen. Do NOT call terminateGMC() or initGMC()
+            # from inside this thread — that deadlocks.
             if not hasattr(GMC_THREAD_Target, "_consecutive_fails"):
                 GMC_THREAD_Target._consecutive_fails = 0
 
             if any(isinstance(v, str) or (isinstance(v, float) and v != v) for v in g.GMC_Value.values()):
-                # Some variable returned a string (error) or NaN
                 GMC_THREAD_Target._consecutive_fails += 1
-                if GMC_THREAD_Target._consecutive_fails >= 5:
-                    print("SERIAL RECOVERY: 5 consecutive failures — resetting GMC connection")
+                if GMC_THREAD_Target._consecutive_fails >= 20:
+                    print("SERIAL RECOVERY: flushing buffer and forcing reopen", flush=True)
                     try:
-                        terminateGMC()
-                        time.sleep(2)
-                        initGMC()
+                        # Force-close any stale handle and drain the buffer
+                        if g.GMC_ser is not None:
+                            try: g.GMC_ser.close()
+                            except: pass
+                            g.GMC_ser = None
+                        # Try to reopen and drain
+                        import serial as _serial
+                        with _serial.Serial(g.GMC_usbport, g.GMC_baudrate,
+                                            timeout=g.GMC_timeoutR_getData,
+                                            write_timeout=g.GMC_timeoutW) as s:
+                            s.reset_input_buffer()
+                            s.reset_output_buffer()
+                        print("SERIAL RECOVERY: buffer flushed", flush=True)
                     except Exception as e:
-                        print(f"SERIAL RECOVERY FAILED: {e}")
+                        print(f"SERIAL RECOVERY FAILED: {e}", flush=True)
                     GMC_THREAD_Target._consecutive_fails = 0
             else:
-                # All good this cycle
                 GMC_THREAD_Target._consecutive_fails = 0
             # --- END SERIAL RECOVERY ---
 
