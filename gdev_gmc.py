@@ -1016,6 +1016,7 @@ def THREAD_GMC_fetchValues(varlist):
                 if scripts_dir not in sys.path:
                     sys.path.insert(0, scripts_dir)
                 import push_to_gist
+                print(f"THREAD: Gist push for {val}", flush=True)
                 threading.Thread(target=push_to_gist.push, args=(val,), daemon=True).start()
     # --- END HOMEBRIDGE GIST PUSH ---
     return THREAD_alldata
@@ -1082,10 +1083,6 @@ def fetchSingleValueGMC(GMC_DataSerial, vname):
 
     # get the value for variable vname
     try:
-        # clean pipeline
-        getGMC_WaitBytes(GMC_DataSerial)
-
-        # getting data bytes
         # Drain any stale bytes before sending a new command
         getGMC_WaitBytes(GMC_DataSerial)
 
@@ -1094,7 +1091,6 @@ def fetchSingleValueGMC(GMC_DataSerial, vname):
         brec      = GMC_DataSerial.read(g.GMC_Bytes)
         brec     += getGMC_WaitBytes(GMC_DataSerial)
         calldur   = time.time() - callstart
-        # rdprint(defname, "{}  brec: {} calldur: {:0.1f} ms ".format(vname, brec, 1000 * calldur))
 
     except Exception as e:
         g.GMC_callsException += 1
@@ -4798,21 +4794,21 @@ def getGMC_DeviceProperties():
         #
         # device with Firmware 1.09 has 6 calibration points, each one coding exact same Sensitivity= 153.8 CPM / (mſv/h)
         #                                       Sensitivity CPM / (µSv/h)
-        # - 1	CPM	1538	microSv/h	10	    153.8
-        # - 2	CPM	15380	microSv/h	100	    153.8
-        # - 3	CPM	30760	microSv/h	200	    153.8
-        # - 4	CPM	76900	microSv/h	500	    153.8
-        # - 5	CPM	153800	microSv/h	1000	153.8
-        # - 6	CPM	307600	microSv/h	2000	153.8
+        # - 1   CPM     1538    microSv/h       10          153.8
+        # - 2   CPM     15380   microSv/h       100         153.8
+        # - 3   CPM     30760   microSv/h       200         153.8
+        # - 4   CPM     76900   microSv/h       500         153.8
+        # - 5   CPM     153800  microSv/h       1000    153.8
+        # - 6   CPM     307600  microSv/h       2000    153.8
         #
         # device with Firmware 1.18 has 6 calibration points, each one coding for a DIFFERENT Sensitivity
         #                                       Sensitivity CPM / (µSv/h)
-        # - 1	CPM	986 	microSv/h	10	    98.60
-        # - 2	CPM	8546 	microSv/h	100	    85.46
-        # - 3	CPM	16408	microSv/h	200	    82.04
-        # - 4	CPM	37970	microSv/h	500	    75.94
-        # - 5	CPM	76010 	microSv/h	1000	76.01
-        # - 6	CPM	139671	microSv/h	2000	69.84
+        # - 1   CPM     986     microSv/h       10          98.60
+        # - 2   CPM     8546    microSv/h       100         85.46
+        # - 3   CPM     16408   microSv/h       200         82.04
+        # - 4   CPM     37970   microSv/h       500         75.94
+        # - 5   CPM     76010   microSv/h       1000    76.01
+        # - 6   CPM     139671  microSv/h       2000    69.84
 
         # GMC-800:  12004E3336301D-A3AD36333437121D
 
